@@ -1,13 +1,28 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { v4 } from "uuid";
 
-function NewTask() {
+function Edit() {
   const navigate = useNavigate();
+  const {id} = useParams()
 
   const [hour, setHour] = useState();
   const [name, setName] = useState();
+
+  useEffect(() => {
+    fetch(`http://localhost:5000/tasks/${id}`, {
+      method:'GET',
+      headers: {
+        'Content-Type' : 'application/json'
+      }
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      setHour(data.hourTask)
+      setName(data.nameTask)
+    })
+  }, [])
 
   function addTask(e) {
     const acceptableColors = [
@@ -28,11 +43,10 @@ function NewTask() {
       nameTask: name,
       id: v4(),
       colorTask: color,
-      doneTask: false,
     };
 
-    fetch("http://localhost:5000/tasks", {
-      method: "POST",
+    fetch(`http://localhost:5000/tasks/${id}`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
@@ -45,32 +59,34 @@ function NewTask() {
   }
 
   return (
-    <NewTaskContainer>
-      <h1>New Task</h1>
+    <EditTaskContainer>
+      <h1>Edit Task</h1>
       <form onSubmit={addTask}>
         <FormInputs>
           <input
             type={"time"}
             required
             placeholder="Task hour"
+            value={hour}
             onChange={(e) => setHour(e.target.value)}
           ></input>
           <input
             type={"text"}
             required
             placeholder="Task name"
+            value={name}
             onChange={(e) => setName(e.target.value)}
           ></input>
         </FormInputs>
         <FormControl>
-          <button>New Task</button>
+          <button>Edit Task</button>
         </FormControl>
       </form>
-    </NewTaskContainer>
+    </EditTaskContainer>
   );
 }
 
-const NewTaskContainer = styled.div`
+const EditTaskContainer = styled.div`
   flex: 80%;
   display: flex;
   justify-content: center;
@@ -139,4 +155,4 @@ const FormControl = styled.div`
   }
 `;
 
-export default NewTask;
+export default Edit;

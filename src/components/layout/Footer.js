@@ -20,6 +20,7 @@ function Footer() {
 const FooterContainer = styled.div`
     display: flex;
     position: absolute;
+    z-index: 30000;
     bottom: -40px;
     width: 80px;
     height: 80px;

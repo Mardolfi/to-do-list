@@ -4,28 +4,34 @@ import { MdOutlineDone } from "react-icons/md";
 import { FaTrashAlt, FaPen } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
 
-function Card() {
-  const [color, setColor] = useState();
+function Card( { name, hour, color, id, done, handleRemove, handleEdit, handleDone } ) {
   const [active, setActive] = useState();
+  const [doneData, setDoneData] = useState();
+
+  function removeTask(e){
+    e.preventDefault();
+    handleRemove(id)
+  }
+
+  function editTask(e){
+    e.preventDefault();
+    handleEdit(id)
+  }
+
+  function doneTask(e){
+    e.preventDefault();
+    handleDone(id)
+  }
 
   useEffect(() => {
-    const acceptableColors = [
-      "#154D63",
-      "#97E9E9",
-      "#7BBBAD",
-      "#FFD296",
-      "#FF8A77",
-    ];
-    setColor(
-      acceptableColors[Math.floor(Math.random() * acceptableColors.length)]
-    );
-  }, []);
+    setDoneData(done)
+  }, [done])
 
   return (
-    <CardContainer>
+    <CardContainer onMouseLeave={() => setActive(false)}>
       <CardInfo>
-        <h2>9:25</h2>
-        <h2>Teamwork</h2>
+        <h2>{hour}</h2>
+        <h2 style={doneData ? {'textDecoration' : 'line-through', 'opacity' : '0.6'} : {}}>{name}</h2>
       </CardInfo>
       <CardColor
         color={color}
@@ -34,13 +40,13 @@ function Card() {
       >
         <AiOutlineClose />
       </CardColor>
-      <DoneTask active={active}>
+      <DoneTask active={active} onClick={doneTask}>
         <MdOutlineDone />
       </DoneTask>
-      <EditTask active={active}>
+      <EditTask active={active} onClick={editTask}>
         <FaPen />
       </EditTask>
-      <RemoveTask active={active}>
+      <RemoveTask active={active} onClick={removeTask}>
         <FaTrashAlt />
       </RemoveTask>
     </CardContainer>
@@ -55,7 +61,6 @@ const CardContainer = styled.div`
   padding: 20px 50px;
   display: flex;
   align-items: center;
-  position: relative;
   justify-content: space-between;
 
   &:hover {
@@ -77,7 +82,9 @@ const CardInfo = styled.div`
 
   h2:nth-child(2) {
     font-weight: normal;
+    font-size: 1.2rem;
     color: #666;
+    text-decoration: ${(props) => props.active == 'true' ? 'line-through' : ''};
   }
 `;
 
@@ -112,7 +119,8 @@ const EditTask = styled.div`
   top: ${(props) => (props.active ? "50px" : "50px")};
   right: ${(props) => (props.active ? "150px" : "50px")};
   box-shadow: ${(props) => (props.active ? "0px 5px 20px -10px #999" : "none")};
-  z-index: 0;
+  z-index: ${(props) => (props.active ? "2" : "-1")};
+
   * {
     width: 20px;
     height: 20px;
@@ -135,7 +143,8 @@ const RemoveTask = styled.div`
   bottom: ${(props) => (props.active ? "-25px" : "50px")};
   right: ${(props) => (props.active ? "100px" : "50px")};
   box-shadow: ${(props) => (props.active ? "0px 5px 20px -10px #999" : "none")};
-  z-index: 0;
+  z-index: ${(props) => (props.active ? "2" : "-1")};
+
   * {
     width: 20px;
     height: 20px;
@@ -158,7 +167,7 @@ const DoneTask = styled.div`
   top: ${(props) => (props.active ? "-25px" : "50px")};
   right: ${(props) => (props.active ? "100px" : "50px")};
   box-shadow: ${(props) => (props.active ? "0px 5px 20px -10px #999" : "none")};
-  z-index: 0;
+  z-index: ${(props) => (props.active ? "2" : "-1")};
   * {
     width: 20px;
     height: 20px;

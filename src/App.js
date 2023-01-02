@@ -4,6 +4,8 @@ import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import Home from "./components/pages/Home";
 import NewTask from "./components/pages/NewTask";
+import Edit from "./components/pages/Edit";
+import Pages from "./components/pages/Pages";
 
 function App() {
   return (
@@ -13,7 +15,9 @@ function App() {
           <Header />
           <Routes>
             <Route path="/" exact element={<Home />}/>
+            <Route path="/tasks/:page" exact element={<Pages />}/>
             <Route path="/newtask" element={<NewTask />}/>
+            <Route path="/edit/:id" element={<Edit />}/>
           </Routes>
           <Footer />
         </Content>

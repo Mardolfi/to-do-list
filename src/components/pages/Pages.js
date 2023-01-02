@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import Card from "../projects/Card";
 import { BsArrowDownCircle } from "react-icons/bs";
-import { IoCaretForward } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { IoCaretBack, IoCaretForward } from "react-icons/io5";
+import { useNavigate, useParams } from "react-router-dom";
 
-function Home() {
+function Pages() {
   const [tasks, setTasks] = useState();
+  const { page } = useParams();
+  const [isBackPage, setIsBackPage] = useState();
+  const [isNextPage, setIsNextPage] = useState();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,13 +21,25 @@ function Home() {
     })
       .then((res) => res.json())
       .then((data) => {
-        if(data.length > 3){
-          navigate('/tasks/1')
+        setTasks(data.slice(Number(page - 1) * 3, page * 3));
+
+        const backPage = Number(page - 2) * 3;
+
+        if (backPage >= 0) {
+          setIsBackPage(true);
         } else {
-          setTasks(data);
+          setIsBackPage(false);
+        }
+
+        const nextPage = Number(page) * 3;
+
+        if (nextPage >= data.length) {
+          setIsNextPage(false);
+        } else {
+          setIsNextPage(true);
         }
       });
-  }, []);
+  }, [page]);
 
   function removeTask(id) {
     fetch(`http://localhost:5000/tasks/${id}`, {
@@ -35,41 +50,73 @@ function Home() {
     })
       .then((res) => res.json())
       .then(() => {
-        const tasksUpdated = tasks.filter((task) => task.id != id)
-        setTasks(tasksUpdated)
+        fetch("http://localhost:5000/tasks", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            setTasks(data.slice(Number(page - 1) * 3, page * 3));
+
+            const backPage = Number(page - 2) * 3;
+
+            if (backPage >= 0) {
+              setIsBackPage(true);
+            } else {
+              setIsBackPage(false);
+            }
+
+            const nextPage = Number(page) * 3;
+
+            if (nextPage >= data.length) {
+              setIsNextPage(false);
+            } else {
+              setIsNextPage(true);
+            }
+          });
       });
   }
 
-  function editTask(id){
-    navigate(`/edit/${id}`)
+  function editTask(id) {
+    navigate(`/edit/${id}`);
   }
 
-  function doneTask(id){
+  function doneTask(id) {
     fetch(`http://localhost:5000/tasks/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-      }
+      },
     })
       .then((res) => res.json())
       .then((data) => {
         const doneData = {
-          doneTask : !data.doneTask,
-        }
-    
+          doneTask: !data.doneTask,
+        };
+
         fetch(`http://localhost:5000/tasks/${id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(doneData)
+          body: JSON.stringify(doneData),
         })
           .then((res) => res.json())
           .then((data) => {
-            const tasksUpdated = tasks.filter((task) => task.id !== data.id)
-            setTasks([data, ...tasksUpdated])
+            const tasksUpdated = tasks.filter((task) => task.id !== data.id);
+            setTasks([data, ...tasksUpdated]);
           });
       });
+  }
+
+  function nextPage() {
+    navigate(`/tasks/${Number(page) + 1}`);
+  }
+
+  function backPage() {
+    navigate(`/tasks/${Number(page) - 1}`);
   }
 
   return (
@@ -94,11 +141,17 @@ function Home() {
           <BsArrowDownCircle />
         </NoneTracksContainer>
       )}
-      {tasks?.length > 3 && 
-      <RightButton>
-        <IoCaretForward />
-      </RightButton>
-      }
+      {isNextPage && (
+        <RightButton onClick={nextPage}>
+          <IoCaretForward />
+        </RightButton>
+      )}
+
+      {isBackPage && (
+        <LeftButton onClick={backPage}>
+          <IoCaretBack />
+        </LeftButton>
+      )}
     </HomeContainer>
   );
 }
@@ -117,21 +170,51 @@ const RightButton = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: .3s;
+  transition: 0.3s;
 
-  :hover{
-    transform: scale(1.1)
+  :hover {
+    transform: scale(1.1);
   }
 
-  :active{
-    transform: scale(0.9)
+  :active {
+    transform: scale(0.9);
   }
 
-  *{
+  * {
     width: 25px;
     height: 25px;
   }
-`
+`;
+
+const LeftButton = styled.button`
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background-color: #57bff9;
+  color: white;
+  left: -25px;
+  top: 300px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.3s;
+
+  :hover {
+    transform: scale(1.1);
+  }
+
+  :active {
+    transform: scale(0.9);
+  }
+
+  * {
+    width: 25px;
+    height: 25px;
+  }
+`;
 
 const HomeContainer = styled.div`
   flex: 80%;
@@ -168,4 +251,4 @@ const NoneTracksContainer = styled.div`
   }
 `;
 
-export default Home;
+export default Pages;
